@@ -107,9 +107,9 @@ function getRandomInt(max) {
         for (var i = 0; i < amountToDrop; i++)
         {
             // 1/3 chance that an item even drops.
-            var shouldDrop = getRandomInt (2);
+            var shouldDrop = getRandomInt (3);
 
-            if (shouldDrop == 2)
+            if (shouldDrop == 0)
             {
                 this.DropLoot (1);
                 itemDropCount++;
@@ -130,7 +130,7 @@ function getRandomInt(max) {
         {
             var table = LootSystem.GetColorTable ();
             var drop = LootSystem.GetDropFromTable (table);
-
+            
             $gameMessage.add ("You got: " + drop.Item.name);
             $gameParty.gainItem (drop.Item, 1, false);
         }

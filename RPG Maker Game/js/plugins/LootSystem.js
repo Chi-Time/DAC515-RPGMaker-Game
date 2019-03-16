@@ -1,8 +1,37 @@
+/*:
+ * @plugindesc Adds a loot system which uses color rarity and double weight tables.
+ * @author James Johnson
+ *
+ * @help This plugin contains several plugin commands.
+ * 
+ * @param White Drop Weight
+ * @desc The weighting of item drops. (Higher means more chance.)
+ * @default 5
+ * 
+ * @param Green Drop Weight
+ * @desc The weighting of item drops. (Higher means more chance.)
+ * @default 4
+ * 
+ * @param Blue Drop Weight
+ * @desc The weighting of item drops. (Higher means more chance.)
+ * @default 3
+ * 
+ * @param Purple Drop Weight
+ * @desc The weighting of item drops. (Higher means more chance.)
+ * @default 2
+ * 
+ * @param Orange Drop Weight
+ * @desc The weighting of item drops. (Higher means more chance.)
+ * @default 1
+ * 
+ * @param Base Item Drop Weight
+ * @desc The weighting of how likely item drops are to occur. (Higher means less chance.)
+ * @default 3
+ */
+
 //TODO: Make it so that we check if there is more than one JSON tag in an object's note box.
-//TODO: Make parameters so that base table weights can be changed in-engine.
-//TODOL Make a parameter that determines what the base chance of an item even dropping is.
 //TODO: Make it so that loot system considers main characters equipped items too.
-//TODO: Ensure that when giving player items that they don't overflow 99. Make a conditional to fix it.
+//TODO: Make chest test to get a statistical average.
 
 /** Returns an int value between 0 and the max (inclusive) given. */
 function getRandomInt(max) {
@@ -11,10 +40,6 @@ function getRandomInt(max) {
 }
 
 (function () {
-    // var Rarity = {
-    //     Color: 0,
-    //     Weight: 0
-    // };
 
     /** Enum for rarity colors */
     var EColors = {
@@ -32,6 +57,15 @@ function getRandomInt(max) {
     var BlueDrops = [];
     var PurpleDrops = [];
     var OrangeDrops = [];
+
+    var parameters = PluginManager.parameters ("LootSystem");
+    var whiteWeight = Number(parameters["White Drop Weight"]);
+    var greenWeight = Number(parameters["Green Drop Weight"]);
+    var blueWeight = Number(parameters["Blue Drop Weight"]);
+    var purpleWeight = Number(parameters["Purple Drop Weight"]);
+    var orangeWeight = Number(parameters["Orange Drop Weight"]);
+    var baseDropWeight = Number(parameters["Base Item Drop Weight"]);
+
 
     /** Static class for interacting with the loot system. */
     function LootSystem () 
@@ -107,7 +141,7 @@ function getRandomInt(max) {
         for (var i = 0; i < amountToDrop; i++)
         {
             // 1/3 chance that an item even drops.
-            var shouldDrop = getRandomInt (3);
+            var shouldDrop = getRandomInt (baseDropWeight);
 
             if (shouldDrop == 0)
             {
@@ -123,23 +157,23 @@ function getRandomInt(max) {
     };
 
     /** Drops loot from random tables with the given number of times.
-     * @param amounToDrop The amount of times to drop loot. */
+     * @param amountToDrop The amount of times to drop loot. */
     LootSystem.DropLoot = function (amountToDrop)
     {
         for (var i = 0; i < amountToDrop; i++)
         {
             var table = LootSystem.GetColorTable ();
             var drop = LootSystem.GetDropFromTable (table);
-
             var code = LootSystem.GetColorCodeFromDrop (drop);
 
-            console.log (code);
-
-            $gameMessage.add ("\\C[0] You got: " + "\\C[" + code + "] " + drop.Item.name);
-            $gameParty.gainItem (drop.Item, 1, false);
+            // If we don't already have it, then add the item to the inventory.
+            $gameMessage.add("\\C[0] You got:" + "\\C[" + code + "] " + drop.Item.name);
+            $gameParty.gainItem(drop.Item, 99, false);
         }
     };
 
+    /** Determines the items current rarity grade and returns a color code based on it.
+     * @param drop The item to check the rarity of. */
     LootSystem.GetColorCodeFromDrop = function (drop)
     {
         switch (drop.Color)
@@ -166,6 +200,8 @@ function getRandomInt(max) {
         {
             return false;
         }
+
+        console.log (whiteWeight);
 
         this.loadWeaponLoot ();
         this.loadArmorLoot ();
@@ -265,13 +301,14 @@ function getRandomInt(max) {
         }
     };
 
+    /** Preloads all rarity tables into a master table. */
     DataManager.loadColorTables = function () 
     {
-        ColorDrops.push ({Drops: WhiteDrops, Weight: 5, Color: 0});
-        ColorDrops.push ({Drops: GreenDrops, Weight: 4, Color: 1});
-        ColorDrops.push ({Drops: BlueDrops, Weight: 3, Color: 2});
-        ColorDrops.push ({Drops: PurpleDrops, Weight: 2, Color: 3});
-        ColorDrops.push ({Drops: OrangeDrops, Weight: 1, Color: 4});
+        ColorDrops.push ({Drops: WhiteDrops, Weight: whiteWeight, Color: EColors.WHITE});
+        ColorDrops.push ({Drops: GreenDrops, Weight: greenWeight, Color: EColors.GREEN});
+        ColorDrops.push ({Drops: BlueDrops, Weight: blueWeight, Color: EColors.BLUE});
+        ColorDrops.push ({Drops: PurpleDrops, Weight: purpleWeight, Color: EColors.PURPLE});
+        ColorDrops.push ({Drops: OrangeDrops, Weight: orangeWeight, Color: EColors.ORANGE});
 
         // for (var i = 0; i < ColorDrops.length; i++)
         // {
@@ -279,6 +316,7 @@ function getRandomInt(max) {
         // }
     };
 
+    /** Loads a table test which runs through a hundred drop simulations to test weighting of tables. */
     DataManager.loadTableTest = function ()
     {
         var whiteCount = 0;

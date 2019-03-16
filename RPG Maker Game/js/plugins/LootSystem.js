@@ -130,9 +130,32 @@ function getRandomInt(max) {
         {
             var table = LootSystem.GetColorTable ();
             var drop = LootSystem.GetDropFromTable (table);
-            
-            $gameMessage.add ("You got: " + drop.Item.name);
+
+            var code = LootSystem.GetColorCodeFromDrop (drop);
+
+            console.log (code);
+
+            $gameMessage.add ("\\C[0] You got: " + "\\C[" + code + "] " + drop.Item.name);
             $gameParty.gainItem (drop.Item, 1, false);
+        }
+    };
+
+    LootSystem.GetColorCodeFromDrop = function (drop)
+    {
+        switch (drop.Color)
+        {
+            case EColors.WHITE:
+                return 0;
+            case EColors.GREEN:
+                return 3;
+            case EColors.BLUE:
+                return 1;
+            case EColors.PURPLE:
+                return 5;
+            case EColors.ORANGE:
+                return 2;
+            default:
+                return 0;
         }
     };
 
@@ -168,23 +191,24 @@ function getRandomInt(max) {
                     if (rarityObj) 
                     {
                         var weight = rarityObj.Rarity.Weight;
+                        var color = rarityObj.Rarity.Color;
 
                         switch (rarityObj.Rarity.Color) 
                         {
                             case EColors.WHITE:
-                                WhiteDrops.push ({Item: weapon, Weight: weight});
+                                WhiteDrops.push ({Item: weapon, Weight: weight, Color: color});
                             break;
                             case EColors.GREEN:
-                                GreenDrops.push ({Item: weapon, Weight: weight});
+                                GreenDrops.push ({Item: weapon, Weight: weight, Color: color});
                             break;
                             case EColors.BLUE:
-                                BlueDrops.push ({Item: weapon, Weight: weight});
+                                BlueDrops.push ({Item: weapon, Weight: weight, Color: color});
                             break;
                             case EColors.PURPLE:
-                                PurpleDrops.push ({Item: weapon, Weight: weight});
+                                PurpleDrops.push ({Item: weapon, Weight: weight, Color: color});
                             break;
                             case EColors.ORANGE:
-                                OrangeDrops.push ({Item: weapon, Weight: weight});
+                                OrangeDrops.push ({Item: weapon, Weight: weight, Color: color});
                             break;
                             default:
                                 console.log ("Nothing to see here");
@@ -212,23 +236,24 @@ function getRandomInt(max) {
                     if (rarityObj) 
                     {
                         var weight = rarityObj.Rarity.Weight;
+                        var color = rarityObj.Rarity.Color;
 
                         switch (rarityObj.Rarity.Color) 
                         {
                             case EColors.WHITE:
-                                WhiteDrops.push ({Item: armor, Weight: weight});
+                                WhiteDrops.push ({Item: armor, Weight: weight, Color: color});
                             break;
                             case EColors.GREEN:
-                                GreenDrops.push ({Item: armor, Weight: weight});
+                                GreenDrops.push ({Item: armor, Weight: weight, Color: color});
                             break;
                             case EColors.BLUE:
-                                BlueDrops.push ({Item: armor, Weight: weight});
+                                BlueDrops.push ({Item: armor, Weight: weight, Color: color});
                             break;
                             case EColors.PURPLE:
-                                PurpleDrops.push ({Item: armor, Weight: weight});
+                                PurpleDrops.push ({Item: armor, Weight: weight, Color: color});
                             break;
                             case EColors.ORANGE:
-                                OrangeDrops.push ({Item: armor, Weight: weight});
+                                OrangeDrops.push ({Item: armor, Weight: weight, Color: color});
                             break;
                             default:
                                 console.log ("Nothing to see here");

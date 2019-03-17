@@ -159,7 +159,7 @@ function getRandomInt(max) {
 
         if (itemDropCount === 0)
         {
-            $gameMessage.add ("Looks like there was nothing.");
+            $gameMessage.add ("Nothing special this time.");
         }
     };
 

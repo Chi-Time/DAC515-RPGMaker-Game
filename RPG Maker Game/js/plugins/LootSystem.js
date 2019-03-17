@@ -33,10 +33,20 @@
 //TODO: Make it so that loot system considers main characters equipped items too.
 //TODO: Make chest test to get a statistical average.
 
-/** Returns an int value between 0 and the max (inclusive) given. */
+/** Returns an int value between 0 and the max (inclusive) given. 
+ * @param max The upper boundary. */
 function getRandomInt(max) {
     max += 1;
     return Math.floor(Math.random() * Math.floor(max));
+}
+
+/** Returns an int value between the min (inclusive) and the max (inclusive) given. 
+ * @param min The lower boundary.
+ * @param max The upper boundary. */
+function getRandomIntInRange (min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 (function () {
@@ -55,7 +65,7 @@ function getRandomInt(max) {
         amount: 0,
         type: "Drop",
         should: false
-    }
+    };
 
     /** Contains all color loot tables in game. (Use the EColors to select the table as it's indexed in the order of the enum. {ColorDrops[EColors.GREEN];}) */
     var ColorDrops = [];
@@ -208,8 +218,6 @@ function getRandomInt(max) {
         {
             return false;
         }
-
-        console.log (whiteWeight);
 
         this.loadWeaponLoot ();
         this.loadArmorLoot ();

@@ -50,6 +50,13 @@ function getRandomInt(max) {
         ORANGE: 4
     };
 
+    //TODO: Find a way to refactor this to make it clearer.
+    var battleDrop = {
+        amount: 0,
+        type: "Drop",
+        should: false
+    }
+
     /** Contains all color loot tables in game. (Use the EColors to select the table as it's indexed in the order of the enum. {ColorDrops[EColors.GREEN];}) */
     var ColorDrops = [];
     var WhiteDrops = [];
@@ -167,6 +174,7 @@ function getRandomInt(max) {
             var code = LootSystem.GetColorCodeFromDrop (drop);
 
             // If we don't already have it, then add the item to the inventory.
+            $gameMessage.newPage ();
             $gameMessage.add("\\C[0] You got:" + "\\C[" + code + "] " + drop.Item.name);
             $gameParty.gainItem(drop.Item, 99, false);
         }
@@ -378,6 +386,42 @@ function getRandomInt(max) {
         {
             LootSystem.DropLootRandom (Number (args[0]));
         }
+
+        if (command === "BDrop")
+        {
+            battleDrop.amount = Number(args[0]);
+            battleDrop.type = "Drop";
+            battleDrop.should = true;
+        }
+
+        if (command === "BDropRandom")
+        {
+            battleDrop.amount = Number(args[0]);
+            battleDrop.type = "Random";
+            battleDrop.should = true;
+        }
+    };
+
+    var _Game_System_OnBattleWin = Game_System.prototype.onBattleWin;
+    Game_System.prototype.onBattleWin = function() {
+        _Game_System_OnBattleWin.call (this);
+
+        // IF we should drop something this battle
+        if (battleDrop.should)
+        {
+            // Determine what form of drop will happen.
+            if (battleDrop.type === "Drop")
+            {
+                LootSystem.DropLoot (battleDrop.amount);
+            }
+            else if (battleDrop.type === "Random")
+            {
+                Loot.DropLootRandom (battleDrop.amount);
+            }
+        }
+
+        // Reset it for next time.
+        battleDrop.should = false;
     };
 
 })();

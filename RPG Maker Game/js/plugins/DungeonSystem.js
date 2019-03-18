@@ -6,7 +6,8 @@
  */
 
  /** Loads JSON data from a given file found within the Data folder of the RPGM project.
-  * @param filename The name of the file to grab the contents of. */
+  * @param {string} filename The name of the file to grab the contents of. 
+  * @returns {any} The parsed JSON object or null if not parsable. */
 function loadJSONDataFromFile(filename) 
 { 
     var fs = require('fs');
@@ -31,6 +32,7 @@ function loadJSONDataFromFile(filename)
 
     /** Contains all dungeon map objects pre-loaded. */
     var dungeonMaps = [];
+    var dungeonChoices = [];
 
     /** Enum for hazard types. */
     var EHazards = {
@@ -50,6 +52,12 @@ function loadJSONDataFromFile(filename)
         BLUE: 2, 
         PURPLE: 3,
         ORANGE: 4
+    };
+
+    /** Static class for interacting with the dungeon system. */
+    function DungeonSystem ()
+    {
+        throw new Error ("This is a static class");
     };
 
     var _DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
@@ -89,7 +97,7 @@ function loadJSONDataFromFile(filename)
     };
 
     /** Returns a pre-formatted name for map files from the given number. 
-     * @param number The current map number to grab the file of. */
+     * @param {number} number The current map number to grab the file of. */
     DataManager.getFormattedName = function (number)
     {
         if (number <= 9)
@@ -99,5 +107,100 @@ function loadJSONDataFromFile(filename)
         else
             return number;
     }
+
+    var _Game_Interpreter_PlugingCommand = Game_Interpreter.prototype.pluginCommand;
+    Game_Interpreter.prototype.pluginCommand = function (command, args) 
+    {
+        _Game_Interpreter_PlugingCommand.call(this, command, args);
+
+        if (command === "ShowDungeons") 
+        {
+            var amount = getRandomIntInRange (1, 4);
+            dungeonChoices.length = 0;
+            $gameMessage.clear ();
+
+            for (var i = 0; i < amount; i++)
+            {
+                var map = dungeonMaps[getRandomIntInRange (0, dungeonMaps.length - 1)];
+
+                if (map)
+                {
+                    if (IsSameMap (map.Map.displayName))
+                    {
+                        i--;
+                        continue;
+                    }
+
+                    dungeonChoices.push (map.Map.displayName);
+                }
+            }
+
+            dungeonChoices.push ("Cancel");
+            $gameMessage.setChoices (dungeonChoices, 0, dungeonChoices.length - 1);
+            $gameMessage.setChoiceCallback (Awesome.bind (this));
+            //$gameMessage.setChoiceCallback (this.Thing (this, choices));
+
+            // for (var i = 0; i < $gameMessage.choices().length; i++)
+            // {
+            //     // console.log ("cho");
+            //     // console.log ($gameMessage.choices()[i]);
+            //     //NOTE: I think what's happening is that it's binding the last choice with the function only. THIS IS WHATS HAPPENING.
+            //     $gameMessage.setChoiceCallback (this.Thing.bind (this, i, choices));
+            //     console.log (i)
+            // }
+        }
+    };
+
+    /** Determines if the given map is the same as one of the already picked choices.
+     * @param {string} mapName The name of the map to test for.
+     * @returns {boolean} Whether or not the map is the same.*/
+    function IsSameMap (mapName)
+    {
+        for (var j = 0; j < dungeonChoices.length; j++) 
+        {
+            if (mapName === dungeonChoices[j]) 
+            {
+                console.log("Found same");
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    function Awesome (number)
+    {
+        if (number === dungeonChoices.length - 1)
+        {
+            console.log ("Cancel: " + number);
+            return;
+        }
+
+        for (var i = 0; i < dungeonMaps.length; i++)
+        {
+            console.log ("Running through maps");
+            console.log (number);
+            //console.log (dungeonMaps[i].Map.displayName + " " + dungeonChoices[number]);
+            if (dungeonMaps[i].Map.displayName === dungeonChoices[number])
+            {
+                //console.log ("Found a matching map.")
+                for (var j = 0; j < dungeonMaps[i].Map.events.length; j++)
+                {
+                    //console.log ("Running through map events");
+                    if (dungeonMaps[i].Map.events[j])
+                    {
+                        //console.log (dungeonMaps[i].Map.events[j]);
+                        if (dungeonMaps[i].Map.events[j].note === "Spawn")
+                        {
+                            $gamePlayer.reserveTransfer(dungeonMaps[i].Map.mapId, dungeonMaps[i].Map.events[j].x, dungeonMaps[i].Map.events[j].y, 0, 0);
+                        }
+                        //TODO: Make function which checks if a map has a spawn event inside of it.
+                    }
+                }
+            }
+        }
+
+        console.log ("Awesome: " + number);
+    };
 
 })();

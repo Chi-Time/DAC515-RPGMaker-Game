@@ -28,7 +28,7 @@ function loadJSONDataFromFile(filename)
     return null;
 };
 
-//TODO: Make it so that upon leaving a dungeon the player get's their reward and list is reset. (Resetting should be handled automatically everytime event is triggered.)
+//TODO: Make it so that if there are no dungeons present the game doesn't crash when trying to access the board.
 (function () {
 
     /** Contains all dungeon map objects pre-loaded. */
@@ -232,12 +232,17 @@ function loadJSONDataFromFile(filename)
 
         this.loadMaps ();
 
+        console.log (dungeonMaps);
+
         return true;
     };
 
     /** Preloads map data into a dungeon maps holder. */
     DataManager.loadMaps = function () 
     {
+        var mapInfos = loadJSONDataFromFile ("MapInfos");
+
+        console.log (mapInfos);
         // Check up to  maximum of 250 maps.
         for (var i = 0; i < 250; i++)
         {
@@ -250,9 +255,18 @@ function loadJSONDataFromFile(filename)
                 // Does it have a note?
                 if (mapData.note)
                 {
-                    // Grab the data from the map's note and store this map into memory.
-                    var mapObj = JSON.parse(mapData.note);
-                    dungeonMaps.push ({Map: mapData, Info: mapObj});
+                    for (var j = 0; j < mapInfos.length; j++)
+                    {
+                        if (mapInfos[j])
+                        {
+                            if (mapInfos[j].id === i) 
+                            {
+                                // Grab the data from the map's note and store this map into memory.
+                                var mapObj = JSON.parse(mapData.note);
+                                dungeonMaps.push ({Map: mapData, Info: mapObj, MapID: mapInfos[j].id});
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -353,17 +367,12 @@ function loadJSONDataFromFile(filename)
         // Reset the data.
         this._data.length = 0;
 
-        console.log ("Current Dungeon Choices");
-        console.log (DungeonSystem._CurrentDungeonChoices);
-
         // Loop through the dungeon choices.
         for (var i = 0; i < DungeonSystem._CurrentDungeonChoices.length; i++)
         {
             // Store the current map choice.
             this._data.push (DungeonSystem._CurrentDungeonChoices[i]);
         }
-
-        console.log (this._data);
     };
 
     QuestBoard_QuestWindow.prototype.drawAllItems = function() {
@@ -484,7 +493,7 @@ function loadJSONDataFromFile(filename)
                     {
                         DungeonSystem._CurrentDungeonID = item.Map.displayName;
                         this.onCancel ();
-                        $gamePlayer.reserveTransfer(item.Map.mapId, item.Map.events[i].x, item.Map.events[i].y, 0, 0);
+                        $gamePlayer.reserveTransfer(item.MapID, item.Map.events[i].x, item.Map.events[i].y, 0, 0);
                     }
                     //TODO: Make function which checks if a map has a spawn event inside of it.
                 }

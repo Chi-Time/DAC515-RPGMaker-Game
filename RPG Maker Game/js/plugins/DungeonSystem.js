@@ -493,9 +493,19 @@ function loadJSONDataFromFile(filename)
                 {
                     if (item.Map.events[i].note === "Spawn") 
                     {
-                        DungeonSystem._CurrentDungeonID = item.Map.displayName;
+                        if ($gameParty.gold () >= item.Info.Cost)
+                        {
+                            DungeonSystem._CurrentDungeonID = item.Map.displayName;
+                            this.onCancel ();
+                            $gameParty.loseGold (item.Info.Cost);
+                            $gamePlayer.reserveTransfer(item.MapID, item.Map.events[i].x, item.Map.events[i].y, 0, 0);
+
+                            return;
+                        }
+
+                        //TODO: Figure out how to play buzzer sound when not accepting input.
                         this.onCancel ();
-                        $gamePlayer.reserveTransfer(item.MapID, item.Map.events[i].x, item.Map.events[i].y, 0, 0);
+                        $gameMessage.add ("Not enough gold for that dungeon");
                     }
                     //TODO: Make function which checks if a map has a spawn event inside of it.
                 }

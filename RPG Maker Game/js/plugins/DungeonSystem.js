@@ -36,13 +36,13 @@ function loadJSONDataFromFile(filename)
 
     /** Enum for hazard types. */
     var EHazards = {
-        Neutral: 0,
-        Paralyze: 1,
-        Blind: 2,
-        Poison: 3,
-        Thunder: 4,
-        Ice: 5,
-        Fire: 6,
+        NEUTRAL: 0,
+        PARALYZE: 1,
+        BLIND: 2,
+        POISON: 3,
+        THUNDER: 4,
+        ICE: 5,
+        FIRE: 6,
     };
 
     /** Enum for difficulty ratings. */
@@ -339,7 +339,12 @@ function loadJSONDataFromFile(filename)
     };
 
     QuestBoard_QuestWindow.prototype.updateHelp = function() {
+        this._helpWindow.makeFontSmaller ();
         this._helpWindow.setText (this.item ().Info.Description);
+
+        if (this._statusWindow) {
+            this._statusWindow.setItem(this.item());
+        }
     };
 
     QuestBoard_QuestWindow.prototype.maxCols = function(){
@@ -378,6 +383,121 @@ function loadJSONDataFromFile(filename)
     QuestBoard_StatusWindow.prototype.refresh = function () {
         this.contents.clear ();
     };
+
+    QuestBoard_StatusWindow.prototype.setItem = function(item) {
+        if (this._item !== item) {
+            this._item = item;
+            this.refresh();
+        }
+    };
+
+    QuestBoard_StatusWindow.prototype.refresh = function() {
+        var item = this._item;
+
+        if (item)
+        {
+            this.contents.clear ();
+            this.makeFontSmaller ();
+            this.drawText ("Enemies Needed: " + item.Info.EnemiesToKill, 0, 0, 400, "left");
+            this.drawText ("Location: " + GetMapLocation (item), 0, 36, 400, "left");
+            //TODO: Make it so that travel cost doesn't just change every time it's highlighted.
+            this.drawText ("Travel Cost: " + GetCost (item), 0, 72, 400, "left");
+            this.drawText ("Hazards: " + GetMapHazard (item), 0, 108, 400, "left");
+            //TODO: Make it so that quest reward doesn't just change every time it's highlighted.
+            this.drawText ("Reward: " + GetReward (item), 0, 144, 400, "left");
+            //TODO: Figure out how to color specific difficulty text.
+            this.drawText ("Difficulty: " + GetMapDifficulty (this, item), 0, 180, 400, "left");
+        }
+    };
+
+    function GetMapLocation (map)
+    {
+        if (map)
+        {
+            switch (map.Info.Location)
+            {
+                case ELocations.PLANES:
+                return "Planes";
+                case ELocations.FOREST:
+                return "Forest";
+                case ELocations.JUNGLE:
+                return "Jungle";
+                case ELocations.VOLCANO:
+                return "Volcano";
+                case ELocations.ICE:
+                return "Ice";
+                case ELocations.RUINS:
+                return "Ruins";
+                default:
+                break; 
+            }
+        }
+
+        return "N/A";
+    }
+
+    function GetMapHazard (map)
+    {
+        if (map)
+        {
+            switch (map.Info.Hazard)
+            {
+                case EHazards.NEUTRAL:
+                return "Neutral";
+                case EHazards.PARALYZE:
+                return "Paralyze";
+                case EHazards.BLIND:
+                return "Blind";
+                case EHazards.POISON:
+                return "Poison";
+                case EHazards.THUNDER:
+                return "Thunder";
+                case EHazards.ICE:
+                return "Ice";
+                case EHazards.FIRE:
+                return "Fire";
+                default:
+                break; 
+            }
+        }
+
+        return "N/A";
+    }
+
+    function GetReward (map)
+    {
+        if (map)
+        {
+            var reward = getRandomIntInRange (map.Info.MinReward, map.Info.MaxReward);
+            return reward;
+        }
+
+        return 0;
+    }
+
+    function GetMapDifficulty (window, map)
+    {
+        if (map)
+        {
+            switch (map.Info.Difficulty)
+            {
+                case EDifficulty.WHITE:
+                return "White";
+                case EDifficulty.GREEN:
+                return "Green";
+                case EDifficulty.BLUE:
+                return "Blue";
+                case EDifficulty.PURPLE:
+                return "Purple";
+                case EDifficulty.ORANGE:
+                return "Orange";
+                default:
+                break; 
+            }
+        }
+
+        return "N/A";
+    }
 
     /** Creates and displays the quest board scene to the user. */
     function QuestBoard_Scene () {

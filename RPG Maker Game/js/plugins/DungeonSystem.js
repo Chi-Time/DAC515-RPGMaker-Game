@@ -28,11 +28,11 @@ function loadJSONDataFromFile(filename)
     return null;
 };
 
+//TODO: Make it so that upon leaving a dungeon the player get's their reward and list is reset. (Resetting should be handled automatically everytime event is triggered.)
 (function () {
 
     /** Contains all dungeon map objects pre-loaded. */
     var dungeonMaps = [];
-    var dungeonChoices = [];
 
     /** Enum for hazard types. */
     var EHazards = {
@@ -68,6 +68,158 @@ function loadJSONDataFromFile(filename)
     function DungeonSystem ()
     {
         throw new Error ("This is a static class");
+    };
+
+    DungeonSystem._CurrentDungeonID = {};
+    DungeonSystem._CurrentDungeonChoices = [];
+
+    DungeonSystem.GetMapLocation = function (map)
+    {
+        if (map)
+        {
+            switch (map.Info.Location)
+            {
+                case ELocations.PLANES:
+                return "Planes";
+                case ELocations.FOREST:
+                return "Forest";
+                case ELocations.JUNGLE:
+                return "Jungle";
+                case ELocations.VOLCANO:
+                return "Volcano";
+                case ELocations.ICE:
+                return "Ice";
+                case ELocations.RUINS:
+                return "Ruins";
+                default:
+                break; 
+            }
+        }
+
+        return "N/A";
+    };
+
+    DungeonSystem.GetMapHazard = function (map)
+    {
+        if (map)
+        {
+            switch (map.Info.Hazard)
+            {
+                case EHazards.NEUTRAL:
+                return "Neutral";
+                case EHazards.PARALYZE:
+                return "Paralyze";
+                case EHazards.BLIND:
+                return "Blind";
+                case EHazards.POISON:
+                return "Poison";
+                case EHazards.THUNDER:
+                return "Thunder";
+                case EHazards.ICE:
+                return "Ice";
+                case EHazards.FIRE:
+                return "Fire";
+                default:
+                break; 
+            }
+        }
+
+        return "N/A";
+    };
+
+    /** Calculates the costs of moving to a dungeon.
+     * @param {any} map The map object containing the map info and data to calculate from.
+     * @returns {number} The amount that the trip will cost. */
+    DungeonSystem.GetCost = function (map)
+    {
+        var cost = map.Info.Distance * getRandomFloatInRange (0.1, 0.9) * 100;
+        cost *= $gameParty.members ().length;
+        return Math.round (cost);
+    };
+
+    DungeonSystem.GetReward = function (map)
+    {
+        if (map)
+        {
+            var reward = getRandomIntInRange (map.Info.MinReward, map.Info.MaxReward);
+            return reward;
+        }
+
+        return 0;
+    };
+
+    DungeonSystem.GetMapDifficulty = function (window, map)
+    {
+        if (map)
+        {
+            switch (map.Info.Difficulty)
+            {
+                case EDifficulty.WHITE:
+                return "White";
+                case EDifficulty.GREEN:
+                return "Green";
+                case EDifficulty.BLUE:
+                return "Blue";
+                case EDifficulty.PURPLE:
+                return "Purple";
+                case EDifficulty.ORANGE:
+                return "Orange";
+                default:
+                break; 
+            }
+        }
+
+        return "N/A";
+    };
+
+    DungeonSystem.GenerateDungeonChoices = function ()
+    {
+        // Reset data.
+        this._CurrentDungeonChoices.length = 0;
+        // Determine how many dungeons to display this time around.
+        var amount = getRandomIntInRange(1, 4);
+
+        for (var i = 0; i < amount; i++) 
+        {
+            // Get a random dungeon map.
+            var map = dungeonMaps[getRandomIntInRange(0, dungeonMaps.length - 1)];
+
+            // If the map is valid.
+            if (map) 
+            {
+                // Determine if the map has been selected before.
+                if (IsSameMap(map.Map.displayName)) 
+                {
+                    // If it has, let's loop again and pick one that hasn't.
+                    i--;
+                    continue;
+                }
+
+                // Setup map with values for travel cost and rewards.
+                map.Info.Cost = this.GetCost (map);
+                map.Info.Reward = this.GetReward (map);
+
+                // If it hasn't, then push this map 
+                this._CurrentDungeonChoices.push (map);
+            }
+        }
+    };
+
+    /** Determines if the given map is the same as one of the already picked choices.
+     * @param {string} mapName The name of the map to test for.
+     * @returns {boolean} Whether or not the map is the same.*/
+    function IsSameMap (mapName)
+    {
+        for (var j = 0; j < DungeonSystem._CurrentDungeonChoices.length; j++) 
+        {
+            if (mapName === DungeonSystem._CurrentDungeonChoices[j]) 
+            {
+                console.log("Found same");
+                return true;
+            }
+        }
+
+        return false;
     };
 
     var _DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
@@ -125,107 +277,31 @@ function loadJSONDataFromFile(filename)
 
         if (command === "ShowQuests")
         {
+            DungeonSystem.GenerateDungeonChoices ();
             SceneManager.push (QuestBoard_Scene);
         }
 
-        if (command === "ShowDungeons")
+        if (command === "FinishDungeon")
         {
-            var amount = getRandomIntInRange (1, 4);
-            dungeonChoices.length = 0;
-
-            for (var i = 0; i < amount; i++)
+            if (DungeonSystem._CurrentDungeonID)
             {
-                var map = dungeonMaps[getRandomIntInRange (0, dungeonMaps.length - 1)];
-
-                if (map)
+                var dungeon = null;
+                for (var i = 0; i < DungeonSystem._CurrentDungeonChoices.length; i++)
                 {
-                    if (IsSameMap (map.Map.displayName))
+                    if (DungeonSystem._CurrentDungeonChoices[i].Map.displayName === DungeonSystem._CurrentDungeonID)
                     {
-                        i--;
-                        continue;
+                        dungeon = DungeonSystem._CurrentDungeonChoices[i];
                     }
-
-                    dungeonChoices.push (map.Map.displayName);
                 }
-            }
 
-            dungeonChoices.push ("Cancel");
-            $gameMessage.setChoices (dungeonChoices, 0, dungeonChoices.length - 1);
-            $gameMessage.add ("hey");
-            $gameMessage.setChoiceCallback (this.testCallback.bind (this));
-
-            $gameMessage.onChoice = function () {
-                $gameMessage.add ("Dungeon costs");
-            };
-        }
-    };
-
-    /** Determines if the given map is the same as one of the already picked choices.
-     * @param {string} mapName The name of the map to test for.
-     * @returns {boolean} Whether or not the map is the same.*/
-    function IsSameMap (mapName)
-    {
-        for (var j = 0; j < dungeonChoices.length; j++) 
-        {
-            if (mapName === dungeonChoices[j]) 
-            {
-                console.log("Found same");
-                return true;
-            }
-        }
-
-        return false;
-    };
-
-    //TODO: Document and refactor this method.
-    Game_Interpreter.prototype.testCallback = function (number)
-    {
-        var map = null;
-        if (number === dungeonChoices.length - 1)
-        {
-            // console.log ("Cancel: " + number);
-            return;
-        }
-
-        for (var i = 0; i < dungeonMaps.length; i++)
-        {
-            // console.log ("Running through maps");
-            // console.log (number);
-            //console.log (dungeonMaps[i].Map.displayName + " " + dungeonChoices[number]);
-            if (dungeonMaps[i].Map.displayName === dungeonChoices[number])
-            {
-                //console.log ("Found a matching map.")
-                for (var j = 0; j < dungeonMaps[i].Map.events.length; j++)
+                if (dungeon)
                 {
-                    //console.log ("Running through map events");
-                    if (dungeonMaps[i].Map.events[j])
-                    {
-                        //console.log (dungeonMaps[i].Map.events[j]);
-                        if (dungeonMaps[i].Map.events[j].note === "Spawn")
-                        {
-                            // console.log ("Yeah");
-                            // console.log ("This dungeon costs: " + GetCost (dungeonMaps[i]));
-                            $gameMessage.clear ();
-                            //$gamePlayer.reserveTransfer(dungeonMaps[i].Map.mapId, dungeonMaps[i].Map.events[j].x, dungeonMaps[i].Map.events[j].y, 0, 0);
-                            
-                        }
-                        //TODO: Make function which checks if a map has a spawn event inside of it.
-                    }
+                    $gameMessage.add("You have completed: " + dungeon.Map.displayName + "!");
+                    $gameMessage.add("You've been awarded: " + dungeon.Info.Reward + " for your work.");
+                    $gameParty.gainGold(dungeon.Info.Reward);
                 }
             }
         }
-
-        console.log ("Awesome: " + number);
-    };
-
-    /** Calculates the costs of moving to a dungeon.
-     * @param {any} map The map object containing the map info and data to calculate from.
-     * @returns {number} The amount that the trip will cost. */
-    function GetCost (map)
-    {
-        var cost = map.Info.Distance * getRandomFloatInRange (0.1, 0.9) * 100;
-        cost *= $gameParty.members ().length;
-        return Math.round (cost);
     };
 
      /** Creates and sets up a craft window for selecting items to craft. */
@@ -265,24 +341,6 @@ function loadJSONDataFromFile(filename)
         this.setCursorFixed (false);
         this.setCursorAll (false);
         this.processCursorMove ();
-
-        if (this.cursorFixed ())
-        {
-            console.log ("cursor fixed");
-        }
-        else
-        {
-            console.log ("Cursor is not fixed");
-        }
-
-        if (this.isCursorMovable ())
-        {
-            console.log ("Cursos is movable");
-        }
-        else
-        {
-            console.log ("Cursor is not movabel");
-        }
     };
 
     QuestBoard_QuestWindow.prototype.setStatusWindow = function(statusWindow) {
@@ -295,29 +353,17 @@ function loadJSONDataFromFile(filename)
         // Reset the data.
         this._data.length = 0;
 
-        // Determine how many dungeons to display this time around.
-        var amount = getRandomIntInRange(1, 4);
+        console.log ("Current Dungeon Choices");
+        console.log (DungeonSystem._CurrentDungeonChoices);
 
-        for (var i = 0; i < amount; i++) 
+        // Loop through the dungeon choices.
+        for (var i = 0; i < DungeonSystem._CurrentDungeonChoices.length; i++)
         {
-            // Get a random dungeon map.
-            var map = dungeonMaps[getRandomIntInRange(0, dungeonMaps.length - 1)];
-
-            // If the map is valid.
-            if (map) 
-            {
-                // Determine if the map has been selected before.
-                if (IsSameMap(map.Map.displayName)) 
-                {
-                    // If it has, let's loop again and pick one that hasn't.
-                    i--;
-                    continue;
-                }
-
-                // If it hasn't, then push this map 
-                this._data.push (map);
-            }
+            // Store the current map choice.
+            this._data.push (DungeonSystem._CurrentDungeonChoices[i]);
         }
+
+        console.log (this._data);
     };
 
     QuestBoard_QuestWindow.prototype.drawAllItems = function() {
@@ -351,18 +397,10 @@ function loadJSONDataFromFile(filename)
 		return 1;
     };
     
-    //TODO: Figure out why this works at all.
+    //NOTE: The cursor selection works thanks to this functions specifically.
     QuestBoard_QuestWindow.prototype.maxItems = function(){
 		return this._data ? this._data.length : 0;
     };
-    
-    // QuestBoard_QuestWindow.prototype.update = function(){
-	// 	if (!$gameMessage.isBusy()){
-	// 		Window_Selectable.prototype.update.call(this);
-	// 		// this.updateStatus();
-	// 		// this.updateIngredients();
-	// 	}
-	// };
 
     /** Creates and set's up a status window for crafting scenes. */
     function QuestBoard_StatusWindow () {
@@ -399,105 +437,14 @@ function loadJSONDataFromFile(filename)
             this.contents.clear ();
             this.makeFontSmaller ();
             this.drawText ("Enemies Needed: " + item.Info.EnemiesToKill, 0, 0, 400, "left");
-            this.drawText ("Location: " + GetMapLocation (item), 0, 36, 400, "left");
-            //TODO: Make it so that travel cost doesn't just change every time it's highlighted.
-            this.drawText ("Travel Cost: " + GetCost (item), 0, 72, 400, "left");
-            this.drawText ("Hazards: " + GetMapHazard (item), 0, 108, 400, "left");
-            //TODO: Make it so that quest reward doesn't just change every time it's highlighted.
-            this.drawText ("Reward: " + GetReward (item), 0, 144, 400, "left");
+            this.drawText ("Location: " + DungeonSystem.GetMapLocation (item), 0, 36, 400, "left");
+            this.drawText ("Travel Cost: " + item.Info.Cost, 0, 72, 400, "left");
+            this.drawText ("Hazards: " + DungeonSystem.GetMapHazard (item), 0, 108, 400, "left");
+            this.drawText ("Reward: " + item.Info.Reward, 0, 144, 400, "left");
             //TODO: Figure out how to color specific difficulty text.
-            this.drawText ("Difficulty: " + GetMapDifficulty (this, item), 0, 180, 400, "left");
+            this.drawText ("Difficulty: " + DungeonSystem.GetMapDifficulty (this, item), 0, 180, 400, "left");
         }
     };
-
-    function GetMapLocation (map)
-    {
-        if (map)
-        {
-            switch (map.Info.Location)
-            {
-                case ELocations.PLANES:
-                return "Planes";
-                case ELocations.FOREST:
-                return "Forest";
-                case ELocations.JUNGLE:
-                return "Jungle";
-                case ELocations.VOLCANO:
-                return "Volcano";
-                case ELocations.ICE:
-                return "Ice";
-                case ELocations.RUINS:
-                return "Ruins";
-                default:
-                break; 
-            }
-        }
-
-        return "N/A";
-    }
-
-    function GetMapHazard (map)
-    {
-        if (map)
-        {
-            switch (map.Info.Hazard)
-            {
-                case EHazards.NEUTRAL:
-                return "Neutral";
-                case EHazards.PARALYZE:
-                return "Paralyze";
-                case EHazards.BLIND:
-                return "Blind";
-                case EHazards.POISON:
-                return "Poison";
-                case EHazards.THUNDER:
-                return "Thunder";
-                case EHazards.ICE:
-                return "Ice";
-                case EHazards.FIRE:
-                return "Fire";
-                default:
-                break; 
-            }
-        }
-
-        return "N/A";
-    }
-
-    function GetReward (map)
-    {
-        if (map)
-        {
-            var reward = getRandomIntInRange (map.Info.MinReward, map.Info.MaxReward);
-            return reward;
-        }
-
-        return 0;
-    }
-
-    function GetMapDifficulty (window, map)
-    {
-        if (map)
-        {
-            switch (map.Info.Difficulty)
-            {
-                case EDifficulty.WHITE:
-                return "White";
-                case EDifficulty.GREEN:
-                return "Green";
-                case EDifficulty.BLUE:
-                return "Blue";
-                case EDifficulty.PURPLE:
-                return "Purple";
-                case EDifficulty.ORANGE:
-                return "Orange";
-                default:
-                break; 
-            }
-        }
-
-        return "N/A";
-    }
 
     /** Creates and displays the quest board scene to the user. */
     function QuestBoard_Scene () {
@@ -535,6 +482,7 @@ function loadJSONDataFromFile(filename)
                 {
                     if (item.Map.events[i].note === "Spawn") 
                     {
+                        DungeonSystem._CurrentDungeonID = item.Map.displayName;
                         this.onCancel ();
                         $gamePlayer.reserveTransfer(item.Map.mapId, item.Map.events[i].x, item.Map.events[i].y, 0, 0);
                     }

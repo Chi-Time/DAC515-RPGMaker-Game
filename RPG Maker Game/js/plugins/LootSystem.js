@@ -432,7 +432,7 @@ function getRandomFloatInRange(min, max) {
             }
             else if (battleDrop.type === "Random")
             {
-                Loot.DropLootRandom (battleDrop.amount);
+                LootSystem.DropLootRandom (battleDrop.amount);
             }
         }
 

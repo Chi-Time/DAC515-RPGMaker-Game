@@ -179,6 +179,8 @@ function loadJSONDataFromFile(filename)
         // Determine how many dungeons to display this time around.
         var amount = getRandomIntInRange(1, 4);
 
+        console.log ("Amount to show: " + amount);
+
         for (var i = 0; i < amount; i++) 
         {
             // Get a random dungeon map.
@@ -212,7 +214,7 @@ function loadJSONDataFromFile(filename)
     {
         for (var j = 0; j < DungeonSystem._CurrentDungeonChoices.length; j++) 
         {
-            if (mapName === DungeonSystem._CurrentDungeonChoices[j]) 
+            if (mapName === DungeonSystem._CurrentDungeonChoices[j].Map.displayName) 
             {
                 console.log("Found same");
                 return true;

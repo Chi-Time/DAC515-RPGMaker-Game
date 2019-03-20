@@ -1,3 +1,4 @@
+
 /*:
  * @plugindesc Adds a dungeon random selection system for curating dungeon choices.
  * @author James Johnson
@@ -6,21 +7,29 @@
  */
 
  /** Loads JSON data from a given file found within the Data folder of the RPGM project.
-  * @param {string} filename The name of the file to grab the contents of. 
-  * @returns {any} The parsed JSON object or null if not parsable. */
+ * @param {string} filename The name of the file to grab the contents of. 
+ * @returns {any} The parsed JSON object or null if not parsable. */
 function loadJSONDataFromFile(filename) 
-{ 
+{
     var fs = require('fs');
-    var dir = window.location.pathname.replace(/(\/www|)\/[^\/]*$/, '/');
+    var dir = window.location.pathname.replace(/\/[^\/]*$/, '/');
+
+    console.log ("Clean Dir: " + dir);
     
     if (dir.match(/^\/([A-Z]\:)/))
     {
         dir = dir.slice(1);
     }
     
+    console.log ("Sliced Dir: " + dir);
+
+    var dir = dir.replace(/\/\//, "/");
+
     filename = decodeURIComponent(dir) + 'data/' + filename + '.json';
 
-    if (fs.existsSync (filename))
+    console.log (filename);
+
+    if (fs.existsSync(filename)) 
     {
         return JsonEx.parse(fs.readFileSync(filename, 'utf8'));
     }
@@ -28,7 +37,6 @@ function loadJSONDataFromFile(filename)
     return null;
 };
 
-//TODO: Make it so that if there are no dungeons present the game doesn't crash when trying to access the board.
 (function () {
 
     /** Contains all dungeon map objects pre-loaded. */
@@ -179,8 +187,6 @@ function loadJSONDataFromFile(filename)
         // Determine how many dungeons to display this time around.
         var amount = getRandomIntInRange(1, 4);
 
-        console.log ("Amount to show: " + amount);
-
         for (var i = 0; i < amount; i++) 
         {
             // Get a random dungeon map.
@@ -216,7 +222,6 @@ function loadJSONDataFromFile(filename)
         {
             if (mapName === DungeonSystem._CurrentDungeonChoices[j].Map.displayName) 
             {
-                console.log("Found same");
                 return true;
             }
         }
@@ -234,8 +239,6 @@ function loadJSONDataFromFile(filename)
 
         this.loadMaps ();
 
-        console.log (dungeonMaps);
-
         return true;
     };
 
@@ -244,8 +247,8 @@ function loadJSONDataFromFile(filename)
     {
         var mapInfos = loadJSONDataFromFile ("MapInfos");
 
-        console.log (mapInfos);
-        // Check up to  maximum of 250 maps.
+        //TODO: Make it so that find out how many files are in the folder and loop for that amount.
+        // Check up to maximum of 250 maps.
         for (var i = 0; i < 250; i++)
         {
             // Grab the data of the current map file.
@@ -293,6 +296,13 @@ function loadJSONDataFromFile(filename)
 
         if (command === "ShowQuests")
         {
+            //loadJSONDataFromFile ();
+            if (dungeonMaps.length <= 0)
+            {
+                $gameMessage.add ("There doesn't appear to be any dungeons to pick....\nWeird.");
+                return;
+            }
+
             DungeonSystem.GenerateDungeonChoices ();
             SceneManager.push (QuestBoard_Scene);
         }

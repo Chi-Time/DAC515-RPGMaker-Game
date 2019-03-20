@@ -78,9 +78,14 @@ function loadJSONDataFromFile(filename)
         throw new Error ("This is a static class");
     };
 
+    /** The current ID of the dungeon which has been selected by the player. */
     DungeonSystem._CurrentDungeonID = {};
+    /** The current dungeon choices the player can pick from. */
     DungeonSystem._CurrentDungeonChoices = [];
 
+    /** Returns a formatted string of the given map's location.
+     * @param {object} map The map to get the location from.
+     * @returns {string} The name of the map's location. */
     DungeonSystem.GetMapLocation = function (map)
     {
         if (map)
@@ -107,6 +112,9 @@ function loadJSONDataFromFile(filename)
         return "N/A";
     };
 
+    /** Returns a formatted string of the given map's hazards.
+     * @param {object} map The map to get the location from.
+     * @returns {string} The hazards of the map. */
     DungeonSystem.GetMapHazard = function (map)
     {
         if (map)
@@ -145,6 +153,9 @@ function loadJSONDataFromFile(filename)
         return Math.round (cost);
     };
 
+    /** Calculates and returns the reward the player can get from the given dungeon.
+     * @param {object} map The dungeon to calculate the reward from.
+     * @returns {number} The reward amount from the dungeon.*/
     DungeonSystem.GetReward = function (map)
     {
         if (map)
@@ -156,7 +167,10 @@ function loadJSONDataFromFile(filename)
         return 0;
     };
 
-    DungeonSystem.GetMapDifficulty = function (window, map)
+    /** Returns a difficulty rating of the given map.
+     * @param {object} map The map to get the difficulty of.
+     * @returns {string} A formatted string of the map's difficulty. */
+    DungeonSystem.GetMapDifficulty = function (map)
     {
         if (map)
         {
@@ -180,6 +194,7 @@ function loadJSONDataFromFile(filename)
         return "N/A";
     };
 
+    /** Generates a list of dungeon choices (populates _currentDungeonChoices) for the player to pick from.*/
     DungeonSystem.GenerateDungeonChoices = function ()
     {
         // Reset data.
@@ -295,37 +310,49 @@ function loadJSONDataFromFile(filename)
         _Game_Interpreter_PlugingCommand.call(this, command, args);
 
         if (command === "ShowQuests")
-        {
-            //loadJSONDataFromFile ();
-            if (dungeonMaps.length <= 0)
-            {
-                $gameMessage.add ("There doesn't appear to be any dungeons to pick....\nWeird.");
-                return;
-            }
-
-            DungeonSystem.GenerateDungeonChoices ();
-            SceneManager.push (QuestBoard_Scene);
-        }
+            ShowQuests ();
 
         if (command === "FinishDungeon")
-        {
-            if (DungeonSystem._CurrentDungeonID)
-            {
-                var dungeon = null;
-                for (var i = 0; i < DungeonSystem._CurrentDungeonChoices.length; i++)
-                {
-                    if (DungeonSystem._CurrentDungeonChoices[i].Map.displayName === DungeonSystem._CurrentDungeonID)
-                    {
-                        dungeon = DungeonSystem._CurrentDungeonChoices[i];
-                    }
-                }
+            FinishDungeon ();
+    };
 
-                if (dungeon)
+    function ShowQuests ()
+    {
+        // Determine if there are any dungeons to show.
+        if (dungeonMaps.length <= 0) 
+        {
+            // If there isn't, then inform the player.
+            $gameMessage.add("There doesn't appear to be any dungeons to pick....\nWeird.");
+            return;
+        }
+
+        // If there is, then generate the dungeon choices and display the dungeon selection window.
+        DungeonSystem.GenerateDungeonChoices();
+        SceneManager.push(QuestBoard_Scene);
+    };
+
+    function FinishDungeon ()
+    {
+        // If there is a dungeon currently selected.
+        if (DungeonSystem._CurrentDungeonID) 
+        {
+            var dungeon = null;
+            for (var i = 0; i < DungeonSystem._CurrentDungeonChoices.length; i++) 
+            {
+                // Grab the current dungeon from this dungeon's ID.
+                //TODO: Make it so that we store the currently selected dungeon as well and not just it's ID.
+                if (DungeonSystem._CurrentDungeonChoices[i].Map.displayName === DungeonSystem._CurrentDungeonID) 
                 {
-                    $gameMessage.add("You have completed: " + dungeon.Map.displayName + "!");
-                    $gameMessage.add("You've been awarded: " + dungeon.Info.Reward + " for your work.");
-                    $gameParty.gainGold(dungeon.Info.Reward);
+                    dungeon = DungeonSystem._CurrentDungeonChoices[i];
                 }
+            }
+
+            if (dungeon) 
+            {
+                // Display to the user that they have completed the dungeon in question and give their reward.
+                $gameMessage.add("You have completed: " + dungeon.Map.displayName + "!");
+                $gameMessage.add("You've been awarded: " + dungeon.Info.Reward + " for your work.");
+                $gameParty.gainGold(dungeon.Info.Reward);
             }
         }
     };

@@ -14,20 +14,20 @@ function loadJSONDataFromFile(filename)
     var fs = require('fs');
     var dir = window.location.pathname.replace(/\/[^\/]*$/, '/');
 
-    console.log ("Clean Dir: " + dir);
+    //console.log ("Clean Dir: " + dir);
     
     if (dir.match(/^\/([A-Z]\:)/))
     {
         dir = dir.slice(1);
     }
     
-    console.log ("Sliced Dir: " + dir);
+    //console.log ("Sliced Dir: " + dir);
 
     var dir = dir.replace(/\/\//, "/");
 
     filename = decodeURIComponent(dir) + 'data/' + filename + '.json';
 
-    console.log (filename);
+    //console.log (filename);
 
     if (fs.existsSync(filename)) 
     {

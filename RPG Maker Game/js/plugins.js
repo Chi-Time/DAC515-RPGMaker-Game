@@ -5,5 +5,6 @@ var $plugins =
 {"name":"MadeWithMv","status":false,"description":"Show a Splash Screen \"Made with MV\" and/or a Custom Splash Screen before going to main screen.","parameters":{"Show Made With MV":"true","Made with MV Image":"MadeWithMv","Show Custom Splash":"false","Custom Image":"","Fade Out Time":"120","Fade In Time":"120","Wait Time":"160"}},
 {"name":"ConsoleOnBoot","status":true,"description":"Shows the developer console on boot.","parameters":{"Console Width":"800","Console Height":"300","Console X-Position":"0","Console Y-Position":"0","Game Window X-Offset":"150","Game Window Y-Offset":"0","Autofocus":"true"}},
 {"name":"LootSystem","status":true,"description":"Adds a loot system which uses color rarity and double weight tables.","parameters":{"White Drop Weight":"5","Green Drop Weight":"4","Blue Drop Weight":"3","Purple Drop Weight":"2","Orange Drop Weight":"1","Base Item Drop Weight":"3"}},
-{"name":"DungeonSystem","status":true,"description":"Adds a dungeon random selection system for curating dungeon choices.","parameters":{}}
+{"name":"DungeonSystem","status":true,"description":"Adds a dungeon random selection system for curating dungeon choices.","parameters":{}},
+{"name":"MercenarySystem","status":true,"description":"Adds a dungeon random selection system for curating dungeon choices.","parameters":{}}
 ];

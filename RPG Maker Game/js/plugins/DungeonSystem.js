@@ -490,7 +490,7 @@ function loadJSONDataFromFile(filename)
             this.drawText ("Hazards: " + DungeonSystem.GetMapHazard (item), 0, 108, 400, "left");
             this.drawText ("Reward: " + item.Info.Reward, 0, 144, 400, "left");
             //TODO: Figure out how to color specific difficulty text.
-            this.drawText ("Difficulty: " + DungeonSystem.GetMapDifficulty (this, item), 0, 180, 400, "left");
+            this.drawText ("Difficulty: " + DungeonSystem.GetMapDifficulty (item), 0, 180, 400, "left");
         }
     };
 

@@ -1,6 +1,6 @@
 [
 null,
-{"id":1,"battlerName":"Actor1_1","characterIndex":0,"characterName":"Nature","classId":1,"equips":[19,41,6,3,0],"faceIndex":0,"faceName":"Nature","traits":[],"initialLevel":1,"maxLevel":99,"name":"Harold","nickname":"","note":"","profile":""},
+{"id":1,"battlerName":"Actor1_1","characterIndex":0,"characterName":"Actor1","classId":1,"equips":[19,41,6,3,0],"faceIndex":0,"faceName":"Actor1","traits":[],"initialLevel":1,"maxLevel":99,"name":"Harold","nickname":"","note":"","profile":""},
 {"id":2,"battlerName":"Actor1_7","characterIndex":6,"characterName":"Actor1","classId":2,"equips":[2,42,37,22,0],"faceIndex":6,"faceName":"Actor1","traits":[],"initialLevel":1,"maxLevel":99,"name":"Warrior","nickname":"","note":"{\n  \"Weight\": 5,\n  \"Price\": 100\n}","profile":""},
 {"id":3,"battlerName":"Actor2_5","characterIndex":4,"characterName":"Actor2","classId":6,"equips":[55,0,8,3,4],"faceIndex":4,"faceName":"Actor2","traits":[],"initialLevel":1,"maxLevel":99,"name":"Pirate","nickname":"","note":"{\n  \"Weight\": 15,\n  \"Price\": 100\n}","profile":""},
 {"id":4,"battlerName":"Actor1_4","characterIndex":3,"characterName":"Actor1","classId":5,"equips":[37,0,6,1,55],"faceIndex":3,"faceName":"Actor1","traits":[],"initialLevel":1,"maxLevel":99,"name":"Rogue","nickname":"","note":"{\n  \"Weight\": 26,\n  \"Price\": 100\n}","profile":""},

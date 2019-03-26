@@ -246,34 +246,38 @@ function getRandomFloatInRange(min, max) {
 
                 if (weapon.note) 
                 {
-                    var rarityObj = JSON.parse(weapon.note);
+                    try {
+                        var rarityObj = JSON.parse(weapon.note);
 
-                    if (rarityObj) 
-                    {
-                        var weight = rarityObj.Rarity.Weight;
-                        var color = rarityObj.Rarity.Color;
+                        if (rarityObj) {
+                            var weight = rarityObj.Rarity.Weight;
+                            var color = rarityObj.Rarity.Color;
 
-                        switch (rarityObj.Rarity.Color) 
-                        {
-                            case EColors.WHITE:
-                                WhiteDrops.push ({Item: weapon, Weight: weight, Color: color});
-                            break;
-                            case EColors.GREEN:
-                                GreenDrops.push ({Item: weapon, Weight: weight, Color: color});
-                            break;
-                            case EColors.BLUE:
-                                BlueDrops.push ({Item: weapon, Weight: weight, Color: color});
-                            break;
-                            case EColors.PURPLE:
-                                PurpleDrops.push ({Item: weapon, Weight: weight, Color: color});
-                            break;
-                            case EColors.ORANGE:
-                                OrangeDrops.push ({Item: weapon, Weight: weight, Color: color});
-                            break;
-                            default:
-                                console.log ("Nothing to see here");
-                            break;
+                            switch (rarityObj.Rarity.Color) {
+                                case EColors.WHITE:
+                                    WhiteDrops.push({ Item: weapon, Weight: weight, Color: color });
+                                    break;
+                                case EColors.GREEN:
+                                    GreenDrops.push({ Item: weapon, Weight: weight, Color: color });
+                                    break;
+                                case EColors.BLUE:
+                                    BlueDrops.push({ Item: weapon, Weight: weight, Color: color });
+                                    break;
+                                case EColors.PURPLE:
+                                    PurpleDrops.push({ Item: weapon, Weight: weight, Color: color });
+                                    break;
+                                case EColors.ORANGE:
+                                    OrangeDrops.push({ Item: weapon, Weight: weight, Color: color });
+                                    break;
+                                default:
+                                    console.log("Nothing to see here");
+                                    break;
+                            }
                         }
+                    
+                    }
+                    catch (e) {
+                        console.log ("Error reading JSON");
                     }
                 }
             }
@@ -291,34 +295,37 @@ function getRandomFloatInRange(min, max) {
 
                 if (armor.note) 
                 {
-                    var rarityObj = JSON.parse(armor.note);
+                    try {
+                        var rarityObj = JSON.parse(armor.note);
 
-                    if (rarityObj) 
-                    {
-                        var weight = rarityObj.Rarity.Weight;
-                        var color = rarityObj.Rarity.Color;
+                        if (rarityObj) {
+                            var weight = rarityObj.Rarity.Weight;
+                            var color = rarityObj.Rarity.Color;
 
-                        switch (rarityObj.Rarity.Color) 
-                        {
-                            case EColors.WHITE:
-                                WhiteDrops.push ({Item: armor, Weight: weight, Color: color});
-                            break;
-                            case EColors.GREEN:
-                                GreenDrops.push ({Item: armor, Weight: weight, Color: color});
-                            break;
-                            case EColors.BLUE:
-                                BlueDrops.push ({Item: armor, Weight: weight, Color: color});
-                            break;
-                            case EColors.PURPLE:
-                                PurpleDrops.push ({Item: armor, Weight: weight, Color: color});
-                            break;
-                            case EColors.ORANGE:
-                                OrangeDrops.push ({Item: armor, Weight: weight, Color: color});
-                            break;
-                            default:
-                                console.log ("Nothing to see here");
-                            break;
+                            switch (rarityObj.Rarity.Color) {
+                                case EColors.WHITE:
+                                    WhiteDrops.push({ Item: armor, Weight: weight, Color: color });
+                                    break;
+                                case EColors.GREEN:
+                                    GreenDrops.push({ Item: armor, Weight: weight, Color: color });
+                                    break;
+                                case EColors.BLUE:
+                                    BlueDrops.push({ Item: armor, Weight: weight, Color: color });
+                                    break;
+                                case EColors.PURPLE:
+                                    PurpleDrops.push({ Item: armor, Weight: weight, Color: color });
+                                    break;
+                                case EColors.ORANGE:
+                                    OrangeDrops.push({ Item: armor, Weight: weight, Color: color });
+                                    break;
+                                default:
+                                    console.log("Nothing to see here");
+                                    break;
+                            }
                         }
+                    }
+                    catch (e) {
+                        console.log ("Error reading JSON");
                     }
                 }
             }

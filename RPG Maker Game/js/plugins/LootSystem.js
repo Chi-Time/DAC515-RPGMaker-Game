@@ -194,7 +194,7 @@ function getRandomFloatInRange(min, max) {
             // If we don't already have it, then add the item to the inventory.
             $gameMessage.newPage ();
             $gameMessage.add("\\C[0] You got:" + "\\C[" + code + "] " + drop.Item.name);
-            $gameParty.gainItem(drop.Item, 99, false);
+            $gameParty.gainItem(drop.Item, 1, false);
         }
     };
 

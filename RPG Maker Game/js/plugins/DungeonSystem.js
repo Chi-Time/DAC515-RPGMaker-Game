@@ -177,15 +177,15 @@ function loadJSONDataFromFile(filename)
             switch (map.Info.Difficulty)
             {
                 case EDifficulty.WHITE:
-                return "White";
+                return "\\C[0]White\\C[0]";
                 case EDifficulty.GREEN:
-                return "Green";
+                return "\\C[3]Green\\C[0]";
                 case EDifficulty.BLUE:
-                return "Blue";
+                return "\\C[1]Blue\\C[0]";
                 case EDifficulty.PURPLE:
-                return "Purple";
+                return "\\C[5]Purple\\C[0]";
                 case EDifficulty.ORANGE:
-                return "Orange";
+                return "\\C[2]Orange\\C[0]";
                 default:
                 break; 
             }
@@ -281,10 +281,17 @@ function loadJSONDataFromFile(filename)
                         {
                             if (mapInfos[j].id === i) 
                             {
-                                // Grab the data from the map's note and store this map into memory.
-                                var mapObj = JSON.parse(mapData.note);
-                                dungeonMaps.push ({Map: mapData, Info: mapObj, MapID: mapInfos[j].id});
-                            }
+                                try {
+                                    // Grab the data from the map's note and store this map into memory.
+                                    var mapObj = JSON.parse(mapData.note);
+
+                                    if (mapObj)
+                                        dungeonMaps.push({ Map: mapData, Info: mapObj, MapID: mapInfos[j].id });
+                                }
+                                catch (e) {
+                                    console.log ("Error reading JSON");
+                                }
+                           }
                         }
                     }
                 }
@@ -490,7 +497,7 @@ function loadJSONDataFromFile(filename)
             this.drawText ("Hazards: " + DungeonSystem.GetMapHazard (item), 0, 108, 400, "left");
             this.drawText ("Reward: " + item.Info.Reward, 0, 144, 400, "left");
             //TODO: Figure out how to color specific difficulty text.
-            this.drawText ("Difficulty: " + DungeonSystem.GetMapDifficulty (item), 0, 180, 400, "left");
+            this.drawTextEx ("\\}Difficulty: " + DungeonSystem.GetMapDifficulty (item), 0, 180, 400, "left");
         }
     };
 

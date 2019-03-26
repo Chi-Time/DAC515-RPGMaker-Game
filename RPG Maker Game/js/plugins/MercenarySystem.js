@@ -8,6 +8,10 @@
 //NOTE: Use this to access the actor you need.
 //$gameActors.actor (mercPool[0].Actor.id))
 
+//TODO: Make it so that when a merc is hired they get removed from the merc pool.
+//TODO: Make it so that a merc can't be put into more than one event.
+//TODO: Make it so that this works with game saves and we remember what's changed.
+
 (function () {
 
     /** Returns an int value between 0 and the max (inclusive) given. 
@@ -18,11 +22,24 @@
     }
 
     var mercPool = [];
+    var deadMercs = [];
+    var hiredMercs = [];
+    var activeMercs = [];
+    var backupMercPool = [];
     var currentMerc = {};
 
-    function MercenarySystem ()
-    {
+    function MercenarySystem () {
         throw new Error ("This is a static class");
+    };
+
+    MercenarySystem._currentMercs = [];
+
+    MercenarySystem.GetMercenaryByID = function (eventID) {
+        for (var i = 0; i < this._currentMercs.length; i++) {
+            if (this._currentMercs[i].id == eventID) {
+                return this._currentMercs[i].Merc;
+            }
+        }
     };
 
     /** Returns the sum of all mercenary weights combined.
@@ -61,6 +78,63 @@
         return null;
     };
 
+    // Remove merc from global pool and set them ready for hiring.
+    MercenarySystem.ActivateMerc = function (merc)
+    {
+        for (var i = mercPool.length - 1; i >= 0; i--)
+        {
+            if (mercPool[i].Actor.id == merc.Actor.id)
+            {
+                console.log ("Activating.")
+                activeMercs.push (merc);
+                mercPool.splice (i, 1);
+            }
+        }
+
+        console.log ("Active Mercs");
+        console.log (activeMercs);
+        console.log ("Merc Pool")
+        console.log (mercPool);
+    };
+
+    // Remove merc from global pool and set them as hired.
+    MercenarySystem.HireMerc = function (merc)
+    {
+        for (var i = activeMercs.length - 1; i >= 0; i--)
+        {
+            if (activeMercs[i].Actor.id == merc.Actor.id)
+            {
+                console.log ("Hiring.")
+                hiredMercs.push (merc);
+                activeMercs.splice (i, 1);
+            }
+        }
+
+        console.log ("Hired Mercs");
+        console.log (hiredMercs);
+        console.log ("Active Pool")
+        console.log (activeMercs);
+    };
+
+    // Rmove merc from all pools and set them as dead.
+    MercenarySystem.KillMerc = function (merc)
+    {
+        for (var i = hiredMercs.length - 1; i >= 0; i--)
+        {
+            if (hiredMercs[i].Actor.id == merc.Actor.id)
+            {
+                console.log ("Killing.")
+                deadMercs.push (merc);
+                hiredMercs.splice (i, 1);
+            }
+        }
+
+        console.log ("Dead Mercs");
+        console.log (activeMercs);
+        console.log ("Hired Pool")
+        console.log (mercPool);
+    };
+
     var _DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
     DataManager.isDatabaseLoaded = function () 
     {
@@ -97,15 +171,28 @@
                 }
             }
         }
+
+        backupMercPool = mercPool;
     };
 
-    var _Game_Interpreter_PlugingCommand = Game_Interpreter.prototype.pluginCommand;
+    var _Game_Interpreter_PluginCommand = Game_Interpreter.prototype.pluginCommand;
     Game_Interpreter.prototype.pluginCommand = function (command, args) 
     {
-        _Game_Interpreter_PlugingCommand.call(this, command, args);
+        _Game_Interpreter_PluginCommand.call(this, command, args);
 
         if (command === "RotateMercs")
         {
+            if (activeMercs.length > 0) {
+                // Re add all of the active mercs back to the pool for re-selection.
+                for (var i = activeMercs.length - 1; i >= 0; i--) {
+                    mercPool.push(activeMercs[i]);
+                }
+
+                activeMercs.length = 0;
+            }
+            
+
+            MercenarySystem._currentMercs.length = 0;
             for (var i = 0; i < $gameMap._events.length; i++)
             {
                 var event = $gameMap._events[i];
@@ -116,8 +203,10 @@
                     {
                         var mercenary = MercenarySystem.GetMercenary ();
                         //NOTE: Cannot depend on data put on event to stay there.
-                        //TODO: FInd another way to associate mercenary with event position.
-                        event.event ().Mercenary = mercenary;
+                        //event.event ().Mercenary = mercenary;
+                        MercenarySystem._currentMercs.push ({id: event.eventId (), Merc: mercenary});
+                        // Remove chosen merc from pool and activate them.
+                        MercenarySystem.ActivateMerc (mercenary);
                     }
                 }
             }
@@ -126,19 +215,28 @@
         if (command === "ShowMerc")
         {
             var eventID = Number (args[0]);
-            console.log ($gameMap.event (eventID));
-            console.log ($gameMap.event (eventID).event ().Mercenary);
-            console.log ("event");
-            console.log ($gameMap.event (eventID)); 
-            console.log ($gameMap.event (eventID).event ());
             var merc = $gameMap.event (eventID).event ().Mercenary;
-            currentMerc = merc;
+            currentMerc = MercenarySystem.GetMercenaryByID (eventID);
 
-            if (!currentMerc)
-                console.log ("Uh Oh Spaghetii Niggas");
+            //console.log (currentMerc);
+
+            // if (!currentMerc)
+            //     console.log ("Uh Oh!");
 
             //Display mercenary window.
             SceneManager.push(CharacterSelection_Scene);
+        }
+
+        if (command === "HireMerc")
+        {
+            if (currentMerc)
+            {
+                var gameActor = $gameActors.actor (currentMerc.Actor.id);
+                
+                $gameParty.addActor(gameActor.actor().id);
+                $gameParty.loseGold(currentMerc.Data.Price);
+                MercenarySystem.HireMerc(currentMerc);
+            }
         }
     };
 
@@ -151,10 +249,41 @@
 
     CharacterSelection_HireWindow.prototype.initialize = function (x, y, width, height) {
         Window_HorzCommand.prototype.initialize.call (this, x, y, width, height);
+        this.select (0);
+        this.refresh ();
+        this._data = [];
+        this._data.push ("Don't Hire");
+        this._data.push ("Hire");
+        this._index = 0;
+        // NOTE: This is necessary when using a command window to get it to register ok.
+        this.addCommand ("Don't Hire", "Don't Hire");
+        this.addCommand ("Hire", "Hire");
+    };
+
+    CharacterSelection_HireWindow.prototype.item = function () {
+        return this._data[this._index];
     };
 
     CharacterSelection_HireWindow.prototype.windowWidth = function () {
         return 456;
+    };
+
+    CharacterSelection_HireWindow.prototype.refresh = function () {
+        this.drawText ("Don't Hire", 0, 0, 300, "left");
+        this.drawText ("Hire", 200, 0, 100, "left");
+    };
+
+    // CharacterSelection_HireWindow.prototype.processOK = function () {
+    //     console.log ("Called");
+    // };
+
+    // NOTE: Both this and maxItems are necessary to make selection cursor move and work.
+    CharacterSelection_HireWindow.prototype.maxCols = function () {
+        return 2;
+    };
+
+    CharacterSelection_HireWindow.prototype.maxItems = function () {
+        return this._data ? this._data.length : 0;
     };
 
     function CharacterSelection_CharacterWindow () {
@@ -170,10 +299,38 @@
     };
 
     CharacterSelection_CharacterWindow.prototype.refresh = function () {
-        console.log ("called character window");
-        this.contents.clear (); 
-        this.drawText ($gameActors.actor (currentMerc.Actor.id).actor ().name, 0, 0, 300, "left");
-        this.drawText ($gameActors.actor (currentMerc.Actor.id).currentClass().name, 300, 0, 300, "left");
+        //console.log ("called character window");
+        this.contents.clear ();
+
+        var skillPadding = 2;
+        var currentRow = 0;
+        var currentColumn = 0;
+        var gameActor = $gameActors.actor (currentMerc.Actor.id);
+        var skills = gameActor.skills ();
+        
+        // Status
+        this.drawActorSimpleStatus (gameActor, 0, 0, 305);
+
+        // Skills
+        this.drawText ("Skills:", 335, 0, 300, 100, "left");
+        for (var i = 0; i < skills.length; i++) {
+            //TODO: Make it so it prints in a row/column and figure it out.
+            this.drawText (skills[i].name + ": " + skills[i].mpCost, 335, 36 + (i * 36), 300, "left");
+        }
+
+        // Stats
+        this.drawText ("Stats", 0, 100 + skillPadding, 300, "left");
+        this.drawText ("ATK -> " + gameActor.atk, 0, 136 + skillPadding, 200, 200);
+        this.drawText ("DEF -> " + gameActor.def, 0, 172 + skillPadding, 200, 200);
+        this.drawText ("MAT -> " + gameActor.mat, 0, 208 + skillPadding, 200, 200);
+        this.drawText ("MDF -> " + gameActor.mdf, 0, 244 + skillPadding, 200, 200);
+        this.drawText ("AGI -> " + gameActor.agi, 0, 280 + skillPadding, 200, 200);
+        this.drawText ("LCK -> " + gameActor.luk, 0, 316 + skillPadding, 200, 200);
+
+        // Description
+        this.drawText ("Description:", 0, 388, 300 + skillPadding, 100, "left");
+        this.drawTextEx (gameActor.actor ().profile, 0, 424 + skillPadding, 1, 300, "left");
+        this.resetFontSettings ();
     };
 
     function CharacterSelection_GoldWindow () {
@@ -189,10 +346,10 @@
     };
 
     CharacterSelection_GoldWindow.prototype.refresh = function () {
-        console.log ("called gold window");
+        //console.log ("called gold window");
         this.contents.clear ();
         this.drawText ("Gold: " + $gameParty.gold (), 0, 0, 250, "left");
-        this.drawText ("Cost: " + 400, 0, 36, 250, "left");
+        this.drawText ("Cost: " + currentMerc.Data.Price, 0, 36, 250, "left");
     };
 
     function CharacterSelection_Scene() {
@@ -244,6 +401,43 @@
     };
 
     CharacterSelection_Scene.prototype.onOk = function () {
+        var item = this._hireWindow.item ();
+        var gameActor = $gameActors.actor (currentMerc.Actor.id);
+
+        if (item === "Hire")
+        {
+            //console.log ($gameParty.gold ());
+            //console.log (currentMerc.Data.Price);
+            if ($gameParty.gold() > currentMerc.Data.Price)
+            {
+                if ($gameParty.members().length >= 4)
+                {
+                    this.onCancel ();
+                    $gameVariables.setValue (1, 0);
+                    $gameMessage.add ("Party already full. \nPlease dismiss a member first.");
+                }
+                else
+                {
+                    console.log (currentMerc);
+                    console.log (hiredMercs);
+                    this.onCancel ();
+                    // Set the character variable so that the event system knows we've hired.
+                    $gameVariables.setValue (1, 1);
+                }
+            }
+            else
+            {
+                this.onCancel ();
+                $gameVariables.setValue (1, 0);
+                $gameMessage.add ("Not enough gold to hire.");
+            }
+        }
+
+        if (item === "Don't Hire")
+        {
+            this.onCancel ();
+            $gameVariables.setValue (1, 0);
+        }
     };
 
     CharacterSelection_Scene.prototype.onCancel = function () {

@@ -142,7 +142,6 @@
         {
             return false;
         }
-
         this.loadMercenaries ();
 
         return true;

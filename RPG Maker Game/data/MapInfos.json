@@ -27,6 +27,6 @@ null,
 {"id":25,"expanded":false,"name":"Jordan Test Map","order":28,"parentId":0,"scrollX":819,"scrollY":461},
 {"id":26,"expanded":false,"name":"Dungeon2","order":3,"parentId":1,"scrollX":1380,"scrollY":573.3333333333334},
 {"id":27,"expanded":false,"name":"Graveyard","order":12,"parentId":2,"scrollX":2184,"scrollY":1242.6666666666667},
-{"id":28,"expanded":false,"name":"TutorialDungeon2","order":5,"parentId":29,"scrollX":794.2222222222222,"scrollY":459.55555555555554},
+{"id":28,"expanded":false,"name":"TutorialDungeon2","order":5,"parentId":29,"scrollX":787.1111111111111,"scrollY":470.22222222222223},
 {"id":29,"expanded":true,"name":"TutorialDungeon1","order":4,"parentId":1,"scrollX":720.8888888888889,"scrollY":872}
 ]

@@ -228,6 +228,23 @@ function loadJSONDataFromFile(filename)
         }
     };
 
+    DungeonSystem.GetDungeonByMapID = function (mapId)
+    {
+        for (var i = 0; i < dungeonMaps.length; i++) 
+        {
+            if (dungeonMaps[i].MapID === mapId)
+            {
+                var map = dungeonMaps[i];
+
+                // Setup map with values for travel cost and rewards.
+                map.Info.Cost = this.GetCost (map);
+                map.Info.Reward = this.GetReward (map);
+                //console.log ("Oh Yeah Babay");
+                return map;
+            }
+        }
+    };
+
     /** Determines if the given map is the same as one of the already picked choices.
      * @param {string} mapName The name of the map to test for.
      * @returns {boolean} Whether or not the map is the same.*/
@@ -316,11 +333,26 @@ function loadJSONDataFromFile(filename)
     {
         _Game_Interpreter_PlugingCommand.call(this, command, args);
 
+        if (command === "ShowSpecificQuest")
+            ShowSpecificQuest (args);
+
         if (command === "ShowQuests")
             ShowQuests ();
 
         if (command === "FinishDungeon")
             FinishDungeon ();
+    };
+
+    function ShowSpecificQuest (args)
+    {
+        var mapID = Number (args);
+        var map = DungeonSystem.GetDungeonByMapID (mapID);
+        //console.log (map);
+        DungeonSystem._CurrentDungeonChoices.push (map);
+        SceneManager.push(QuestBoard_Scene);
+        //TODO: Make it so that description comes to the player in the scene window or that they can log it and go to the inn keeper again or something. As it's currently weird. 
+        // Maybe even make it so that they teleport to the inn-keeper. So like, a seperate window event that doesn't teleport the player but instead allows an event to teleport the player instead.
+        $gameMessage.add ("It turns out\nthat the rats in the basement were put in there\nby the great rat king Ratsputin.\nAn orc left over from the civil war who went mad\ndue to PTSD and began nurturing\ninfant rats with his pipe, as his children and army.");
     };
 
     function ShowQuests ()
@@ -428,7 +460,8 @@ function loadJSONDataFromFile(filename)
         {
             var rect = this.itemRectForText(this._index);
             rect.width -= this.textPadding();
-            this.drawText(this._data[i].Map.displayName, rect.x, i * 36, rect.width, "left");
+            this.drawText(this._data[i].Info.Title, rect.x, i * 36, rect.width, "left");
+            //this.drawText(this._data[i].Map.displayName, rect.x, i * 36, rect.width, "left");
         }
     };
 

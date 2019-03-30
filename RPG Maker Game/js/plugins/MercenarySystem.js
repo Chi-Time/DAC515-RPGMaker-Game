@@ -34,7 +34,18 @@
 
     MercenarySystem._currentMercs = [];
 
-    MercenarySystem.GetMercenaryByID = function (eventID) {
+    MercenarySystem.GetMercenaryByActorID = function (actorID) {
+        for (var i = 0; i < mercPool.length; i++)  {
+            var merc = mercPool[i];
+            console.log (merc);
+            if (merc.Actor.id === actorID) {
+                //console.log ("Found Em");
+                return merc;
+            }
+        }
+    };
+
+    MercenarySystem.GetMercenaryByEventID = function (eventID) {
         for (var i = 0; i < this._currentMercs.length; i++) {
             if (this._currentMercs[i].id == eventID) {
                 return this._currentMercs[i].Merc;
@@ -211,21 +222,43 @@
             }
         }
 
-        if (command === "ShowMerc")
+        // Shows the specific mercenary by their actor ID.
+        if (command === "ShowSpecificMerc")
         {
-            var eventID = Number (args[0]);
-            var merc = $gameMap.event (eventID).event ().Mercenary;
-            currentMerc = MercenarySystem.GetMercenaryByID (eventID);
-
-            //console.log (currentMerc);
-
-            // if (!currentMerc)
-            //     console.log ("Uh Oh!");
-
-            //Display mercenary window.
-            SceneManager.push(CharacterSelection_Scene);
+            if (args)
+            {
+                //console.log ("Args Showed Up");
+                var actorID = Number (args[0]);
+                currentMerc = MercenarySystem.GetMercenaryByActorID (actorID);
+                
+                //Display mercenary window.
+                SceneManager.push(CharacterSelection_Scene);
+            }
+            else 
+            {
+                console.log ("There was no argument passed");
+            }
         }
 
+        // Shows the mercenary assigned to the current event ID.
+        if (command === "ShowMerc")
+        {
+            if (args)
+            {
+                var eventID = Number(args[0]);
+                currentMerc = MercenarySystem.GetMercenaryByEventID(eventID);
+
+                $gameMessage.add (currentMerc.Data.HireMessage);
+                //Display mercenary window.
+                SceneManager.push(CharacterSelection_Scene);
+            }
+            else 
+            {
+                console.log ("There was no argument passed");
+            }
+        }
+
+        // Hire's the currently selected merc and adds them to the player's party.
         if (command === "HireMerc")
         {
             if (currentMerc)

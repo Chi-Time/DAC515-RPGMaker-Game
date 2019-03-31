@@ -69,7 +69,8 @@ function loadJSONDataFromFile(filename)
          JUNGLE: 2,
          VOLCANO: 3,
          ICE: 4,
-         RUINS: 5
+         RUINS: 5,
+         CAVERN: 6
     };
 
     /** Static class for interacting with the dungeon system. */
@@ -104,6 +105,8 @@ function loadJSONDataFromFile(filename)
                 return "Ice";
                 case ELocations.RUINS:
                 return "Ruins";
+                case ELocations.CAVERN:
+                return "Cavern";
                 default:
                 break; 
             }
@@ -177,15 +180,15 @@ function loadJSONDataFromFile(filename)
             switch (map.Info.Difficulty)
             {
                 case EDifficulty.WHITE:
-                return "\\C[0]White\\C[0]";
+                return "\\C[0]★\\C[0]";
                 case EDifficulty.GREEN:
-                return "\\C[3]Green\\C[0]";
+                return "\\C[3]★★\\C[0]";
                 case EDifficulty.BLUE:
-                return "\\C[1]Blue\\C[0]";
+                return "\\C[1]★★★\\C[0]";
                 case EDifficulty.PURPLE:
-                return "\\C[5]Purple\\C[0]";
+                return "\\C[5]★★★★\\C[0]";
                 case EDifficulty.ORANGE:
-                return "\\C[2]Orange\\C[0]";
+                return "\\C[2]★★★★★\\C[0]";
                 default:
                 break; 
             }
@@ -230,6 +233,9 @@ function loadJSONDataFromFile(filename)
 
     DungeonSystem.GetDungeonByMapID = function (mapId)
     {
+        // Reset data.
+        this._CurrentDungeonChoices.length = 0;
+
         for (var i = 0; i < dungeonMaps.length; i++) 
         {
             if (dungeonMaps[i].MapID === mapId)
@@ -352,7 +358,9 @@ function loadJSONDataFromFile(filename)
         SceneManager.push(QuestBoard_Scene);
         //TODO: Make it so that description comes to the player in the scene window or that they can log it and go to the inn keeper again or something. As it's currently weird. 
         // Maybe even make it so that they teleport to the inn-keeper. So like, a seperate window event that doesn't teleport the player but instead allows an event to teleport the player instead.
-        $gameMessage.add ("It turns out\nthat the rats in the basement were put in there\nby the great rat king Ratsputin.\nAn orc left over from the civil war who went mad\ndue to PTSD and began nurturing\ninfant rats with his pipe, as his children and army.");
+        //TODO: Make it so that this message only plays if the player has accepted the dungeon.
+        //TODO: Make these dungeon messages appear from inside the dungeon data itself.
+        $gameMessage.add ("Board Description:\n\n\n\nHey Mercenary, so I did some research.\nIt turns out\nthat the rat key in the basement\nand the rats themselves were put in there\nby the great rat king Ratsputin.\nHe was an orc left over from the civil war\nwho went mad due to PTSD and began nurturing\ninfant rats with his pipe.\nHe plans to use these rats\nas his children and army.\nI need you to take down Ratsputin\nand grab his pipe for me as proof.");
     };
 
     function ShowQuests ()
@@ -524,13 +532,13 @@ function loadJSONDataFromFile(filename)
         {
             this.contents.clear ();
             this.makeFontSmaller ();
-            this.drawText ("Enemies Needed: " + item.Info.EnemiesToKill, 0, 0, 400, "left");
-            this.drawText ("Location: " + DungeonSystem.GetMapLocation (item), 0, 36, 400, "left");
-            this.drawText ("Travel Cost: " + item.Info.Cost, 0, 72, 400, "left");
-            this.drawText ("Hazards: " + DungeonSystem.GetMapHazard (item), 0, 108, 400, "left");
-            this.drawText ("Reward: " + item.Info.Reward, 0, 144, 400, "left");
+            this.drawTextEx ("\\C[8]Enemies Needed: \\C[0]" + item.Info.EnemiesToKill, 0, 0, 400, "left");
+            this.drawTextEx ("\\C[8]Location: \\C[0]" + DungeonSystem.GetMapLocation (item), 0, 36, 400, "left");
+            this.drawTextEx ("\\C[8]Travel Cost: \\C[0]" + item.Info.Cost, 0, 72, 400, "left");
+            this.drawTextEx ("\\C[8]Hazards: \\C[0]" + DungeonSystem.GetMapHazard (item), 0, 108, 400, "left");
+            this.drawTextEx ("\\C[8]Reward: \\C[0]" + item.Info.Reward, 0, 144, 400, "left");
             //TODO: Figure out how to color specific difficulty text.
-            this.drawTextEx ("\\}Difficulty: " + DungeonSystem.GetMapDifficulty (item), 0, 180, 400, "left");
+            this.drawTextEx ("\\C[8]Difficulty: " + DungeonSystem.GetMapDifficulty (item), 0, 180, 400, "left");
         }
     };
 

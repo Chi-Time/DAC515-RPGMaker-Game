@@ -181,6 +181,30 @@ function getRandomFloatInRange(min, max) {
         }
     };
 
+    /** Drops loot from random tables with the given number of times with a chance on every drop to get nothing at all.
+     * @param amounToDrop The amount of times to drop loot. */
+    LootSystem.DropLootRandom = function (color, amountToDrop)
+    {
+        var itemDropCount = 0;
+
+        for (var i = 0; i < amountToDrop; i++)
+        {
+            // 1/3 chance that an item even drops.
+            var shouldDrop = getRandomInt (baseDropWeight);
+
+            if (shouldDrop == 0)
+            {
+                this.DropLoot (color, 1);
+                itemDropCount++;
+            }
+        }
+
+        if (itemDropCount === 0)
+        {
+            $gameMessage.add ("Nothing special this time.");
+        }
+    };
+
     /** Drops loot from random tables with the given number of times.
      * @param amountToDrop The amount of times to drop loot. */
     LootSystem.DropLoot = function (amountToDrop)
@@ -188,6 +212,23 @@ function getRandomFloatInRange(min, max) {
         for (var i = 0; i < amountToDrop; i++)
         {
             var table = LootSystem.GetColorTable ();
+            var drop = LootSystem.GetDropFromTable (table);
+            var code = LootSystem.GetColorCodeFromDrop (drop);
+
+            // If we don't already have it, then add the item to the inventory.
+            $gameMessage.newPage ();
+            $gameMessage.add("\\C[0] You got:" + "\\C[" + code + "] " + drop.Item.name);
+            $gameParty.gainItem(drop.Item, 1, false);
+        }
+    };
+
+    /** Drops loot from random tables with the given number of times.
+     * @param amountToDrop The amount of times to drop loot. */
+    LootSystem.DropLoot = function (color, amountToDrop)
+    {
+        for (var i = 0; i < amountToDrop; i++)
+        {
+            var table = ColorDrops[color];
             var drop = LootSystem.GetDropFromTable (table);
             var code = LootSystem.GetColorCodeFromDrop (drop);
 
@@ -405,9 +446,20 @@ function getRandomFloatInRange(min, max) {
             LootSystem.DropLoot (Number (args[0]));
         }
 
+        if (command === "WhiteDrop")
+        {
+            LootSystem.DropLoot (EColors.WHITE, Number(args[0]));
+        }
+
         if (command === "DropRandom") 
         {
             LootSystem.DropLootRandom (Number (args[0]));
+        }
+
+        //TODO: Add more color specific drops.
+        if (command === "WhiteDropRandom") 
+        {
+            LootSystem.DropLootRandom (EColors.WHITE, Number (args[0]));
         }
 
         if (command === "BDrop")
@@ -417,6 +469,7 @@ function getRandomFloatInRange(min, max) {
             battleDrop.should = true;
         }
 
+        //TODO: Add-in color specific battle drops.
         if (command === "BDropRandom")
         {
             battleDrop.amount = Number(args[0]);

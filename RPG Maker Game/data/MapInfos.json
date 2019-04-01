@@ -1,7 +1,7 @@
 [
 null,
-{"id":1,"expanded":true,"name":"MAP001","order":1,"parentId":0,"scrollX":819,"scrollY":466},
-{"id":2,"expanded":false,"name":"Town","order":6,"parentId":0,"scrollX":1445,"scrollY":598},
+{"id":1,"expanded":false,"name":"MAP001","order":1,"parentId":0,"scrollX":819,"scrollY":466},
+{"id":2,"expanded":false,"name":"Town","order":6,"parentId":0,"scrollX":811,"scrollY":598},
 {"id":3,"expanded":false,"name":"Inn","order":7,"parentId":2,"scrollX":819,"scrollY":466},
 {"id":4,"expanded":false,"name":"Smith","order":8,"parentId":2,"scrollX":819,"scrollY":466},
 {"id":5,"expanded":true,"name":"Shop","order":9,"parentId":2,"scrollX":819,"scrollY":466},

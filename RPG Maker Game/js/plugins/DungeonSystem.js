@@ -6,6 +6,12 @@
  * @help This plugin contains several plugin commands.
  */
 
+ //TODO: Make it so that all dungeons have the new metadata associated with titles.
+ //TODO: Make it so that dungeon selection works again in the main town.
+ //TODO: Display a banner image behind the dungeon selections.
+ //TODO: Log whether a dungeon has been completed and disallow it from being shown on the board. Example: Remove Ratsputin quest from showing on board after tutorial.
+ //TODO: Re-jig UI so that the windows are resized to better fit their content as they're currently really low when they don't need to be.
+
  /** Loads JSON data from a given file found within the Data folder of the RPGM project.
  * @param {string} filename The name of the file to grab the contents of. 
  * @returns {any} The parsed JSON object or null if not parsable. */

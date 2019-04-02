@@ -1,0 +1,19 @@
+pots don't say nothing - Fixed
+Innkeeper never asks player to talk to townspeople. - Fixed
+Ratsputin's pipe drops twice - Fixed
+not telling me to go back to inn after killing all rats - Done
+Smith right door interior not opening right way - Fixed
+Shop right door exterior not opeing right way - Fixed 
+Shop keep intor pause on why feel wrong  - Fixed
+No a between partnership with shopkeeper intro text  - Fixed
+Not telling me to go back to innkeeper after talking to store peeps - Done
+innkeeper says use instead of us - Fixed
+Innkeeper gives money again - Fixed
+trying to talk to blonde bitch when next to notice board brings up both - Fixed
+First rat in rasputin dungeon doesn't run away - Fixed
+player can save while in dungeon - Fixed
+game doesn't end and quest doen't fail when the player dies - Fixed
+Dead rasputin turns into a bat when talked to - Fixed
+Fix Ratsputin board description text. - 
+Walking back into the cellar gets you stuck after completing rasputin quest - 
+No continue game option on main menu - 

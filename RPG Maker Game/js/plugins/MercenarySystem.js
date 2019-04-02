@@ -440,7 +440,7 @@
         {
             //console.log ($gameParty.gold ());
             //console.log (currentMerc.Data.Price);
-            if ($gameParty.gold() > currentMerc.Data.Price)
+            if ($gameParty.gold() >= currentMerc.Data.Price)
             {
                 if ($gameParty.members().length >= 4)
                 {
